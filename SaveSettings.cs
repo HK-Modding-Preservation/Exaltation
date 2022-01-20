@@ -1,7 +1,8 @@
-﻿using Modding;
+﻿using System;
 
 namespace Exaltation
 {
+	[Serializable]
 	public class SaveSettings
 	{
 		public bool GatheringSwarmGlorified; //1
