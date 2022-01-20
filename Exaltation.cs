@@ -8,7 +8,6 @@ using HutongGames.PlayMaker;
 using UnityEngine;
 using UnityEngine.UI;
 using GlobalEnums;
-using ModCommon.Util;
 
 namespace Exaltation
 {
@@ -17,7 +16,7 @@ namespace Exaltation
 #warning DEBUG MODE ACTIVE - DO NOT SHIP THIS
 #warning ####################################
 #endif
-	public class Exaltation : Mod<SaveSettings>
+	public class Exaltation : Mod, ILocalSettings<SaveSettings>
 	{
 
 		private const float BASE_SPEED = 8.3f;
@@ -77,6 +76,10 @@ namespace Exaltation
 
 		private int[] CharmNums = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 16, 19, 20, 21, 22, 26, 27, 29, 30, 31, 32, 33, 35, 37 }; //the charm numbers that can be glorified go here for sprites and the like
 
+		public SaveSettings Settings = new SaveSettings();
+		public void OnLoadLocal(SaveSettings s) => Settings = s;
+		public SaveSettings OnSaveLocal() => Settings;
+
 		public void OnHeroUpdate()
 		{
 			MakeCanvas();
@@ -91,7 +94,7 @@ namespace Exaltation
 				{
 					StoneshellRegenTime = STONESHELL_REGEN_WAIT;
 					PlayerData.instance.blockerHits++;
-					HeroController.instance.GetAttr<AudioSource>("audioSource")
+					ReflectionHelper.GetField<HeroController, AudioSource>(HeroController.instance, "audioSource")
 						.PlayOneShot(LoadAssets.BlockerSound, 1f);
 					((SpriteFlash)SpriteField.GetValue(HeroController.instance)).flash(Color.blue, 0.5f, 0.0f, 0.0f, 0.5f);
 				}
@@ -134,7 +137,7 @@ namespace Exaltation
 			}
 		}
 
-		public string LanguageGet(string key, string sheet)
+		public string LanguageGet(string key, string sheet, string orig)
 		{
 			if (IsGlorified("GatheringSwarm"))
 			{
@@ -456,7 +459,7 @@ namespace Exaltation
 			{
 				amount--; // reduces high damage by 1 mask!
 				HeroController.instance.TakeMP(KingsmouldCarapaceSoulCost);
-				HeroController.instance.GetAttr<AudioSource>("audioSource")
+				ReflectionHelper.GetField<HeroController, AudioSource>(HeroController.instance, "audioSource")
 					.PlayOneShot(LoadAssets.ShellSound, 1f);
 				KingsmouldCarapaceSoulCost *= 2;
 				if (KingsmouldCarapaceSoulCost > 100)
@@ -466,7 +469,7 @@ namespace Exaltation
 			{
 				amount = pd.health - 1; //brings to 1 HP if you're not there already
 				WyrmfuryDeathProtection = false; //nullify the hit!
-				HeroController.instance.GetAttr<AudioSource>("audioSource")
+				ReflectionHelper.GetField<HeroController, AudioSource>(HeroController.instance, "audioSource")
 					.PlayOneShot(LoadAssets.WyrmfurySound, 1f);
 				GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
 			}
@@ -637,7 +640,6 @@ namespace Exaltation
 
 			if (TextCanvas == null)
 			{
-				CanvasUtil.CreateFonts();
 				TextCanvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceOverlay, new Vector2(1920f, 1080f));
 				GameObject TextPanel = CanvasUtil.CreateTextPanel(TextCanvas, "", 27, TextAnchor.MiddleCenter,
 					new CanvasUtil.RectData(
@@ -1018,7 +1020,7 @@ namespace Exaltation
 			TextObject.text = glorytext;
 			TextObject.CrossFadeAlpha(1f, 0f, false);
 			((SpriteFlash)SpriteField.GetValue(HeroController.instance)).flash(Color.white, 1.75f, 0.25f, 1f, 0.5f);
-			HeroController.instance.GetAttr<AudioSource>("audioSource")
+			ReflectionHelper.GetField<HeroController, AudioSource>(HeroController.instance, "audioSource")
 				.PlayOneShot(LoadAssets.GlorifySound, 1f);
 			GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
 			yield return new WaitForSeconds(1.5f);
@@ -1027,24 +1029,24 @@ namespace Exaltation
 
 		private void RegisterCallbacks()
 		{
-			ModHooks.Instance.HeroUpdateHook += OnHeroUpdate;
-			ModHooks.Instance.LanguageGetHook += LanguageGet;
+			ModHooks.HeroUpdateHook += OnHeroUpdate;
+			ModHooks.LanguageGetHook += LanguageGet;
 
-			ModHooks.Instance.BeforeAddHealthHook += TakeDamage;
-			ModHooks.Instance.TakeHealthHook += TakeDamage;
-			ModHooks.Instance.BlueHealthHook += LifebloodMasksRestored;
+			ModHooks.BeforeAddHealthHook += TakeDamage;
+			ModHooks.TakeHealthHook += TakeDamage;
+			ModHooks.BlueHealthHook += LifebloodMasksRestored;
 
-			ModHooks.Instance.CharmUpdateHook += OnCharmUpdate;
+			ModHooks.CharmUpdateHook += OnCharmUpdate;
 
-			ModHooks.Instance.SoulGainHook += GainSoul;
+			ModHooks.SoulGainHook += GainSoul;
 
-			ModHooks.Instance.HitInstanceHook += HitInstanceAdjust;
+			ModHooks.HitInstanceHook += HitInstanceAdjust;
 
-			ModHooks.Instance.DashPressedHook += DashPressed;
+			ModHooks.DashPressedHook += DashPressed;
 
-			ModHooks.Instance.BeforeSavegameSaveHook += BeforeSaveGameSave;
-			ModHooks.Instance.AfterSavegameLoadHook += AfterSaveGameLoad;
-			ModHooks.Instance.SavegameSaveHook += SaveGameSave;
+			ModHooks.BeforeSavegameSaveHook += BeforeSaveGameSave;
+			ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
+			ModHooks.SavegameSaveHook += SaveGameSave;
 
 			Assembly asm = Assembly.GetExecutingAssembly();
 			Sprites = new Dictionary<string, Sprite>();
