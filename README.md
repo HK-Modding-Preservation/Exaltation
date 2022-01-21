@@ -14,18 +14,19 @@ Created by Xhuis with a lot of help from modders in the Hollow Knight Discord, i
 
 ![](https://i.imgur.com/SFrBFlq.png)
 
-A full list of glorifications can be found [here](https://github.com/Xhuis/Exaltation/blob/master/CHARM_LIST.md). Note that this file contains **spoilers!**
+A full list of glorifications can be found [here](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHARM_LIST.md). Note that this file contains **spoilers!**
 
 ## Installation
 
-To install Exaltation, use the Mod Installer found [here](https://radiance.host/mods/ModInstaller.exe). Search for Exaltation on the mod list.
+1.5 Only
 
-Exaltation also requires ModCommon to function.
++ Install the modding API from https://github.com/hk-modding/api (if you're already using Scarab, you can skip this step)
++ Download the latest release and drag-and-drop the Exaltation folder containing Exaltation.dll into Hollow Knight/Hollow Knight_Data/Managed/Mods
 
 ## Other Info
 
-[Full charm glorification list. Contains spoilers.](https://github.com/Xhuis/Exaltation/blob/master/CHARM_LIST.md)
+[Full charm glorification list. Contains spoilers.](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHARM_LIST.md)
 
-[Changelog. No spoilers.](https://github.com/Xhuis/Exaltation/blob/master/CHANGELOG.md)
+[Changelog. No spoilers.](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHANGELOG.md)
 
-Exaltation is licensed under the [MIT License](https://github.com/Xhuis/Exaltation/blob/master/LICENSE.md). If any representatives from Team Cherry feel that this license conflicts with Hollow Knight as a product, I urge them to get in touch with me so that I can change it properly.
+Exaltation is licensed under the [MIT License](https://github.com/TheodoreBranlex/Exaltation/blob/master/LICENSE.md). If any representatives from Team Cherry feel that this license conflicts with Hollow Knight as a product, get in touch with me so that I can change it properly.
