@@ -18,7 +18,7 @@ A full list of glorifications can be found [here](https://github.com/TheodoreBra
 
 ## Installation
 
-1.5 Only
+Only for Hollow Knight 1.5
 
 + Install the [modding API](https://github.com/hk-modding/api) (if you're already using Scarab, you can skip this step)
 + Download the latest release and drag-and-drop the Exaltation folder containing Exaltation.dll into Hollow Knight/Hollow Knight_Data/Managed/Mods
