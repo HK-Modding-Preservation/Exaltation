@@ -16,7 +16,7 @@ namespace Exaltation
 #warning DEBUG MODE ACTIVE - DO NOT SHIP THIS
 #warning ####################################
 #endif
-	public class Exaltation : Mod, ILocalSettings<SaveSettings>
+	public class Exaltation : Mod, IMenuMod, ITogglableMod, ILocalSettings<SaveSettings>
 	{
 
 		private const float BASE_SPEED = 8.3f;
@@ -80,6 +80,13 @@ namespace Exaltation
 		public void OnLoadLocal(SaveSettings s) => Settings = s;
 		public SaveSettings OnSaveLocal() => Settings;
 
+		// Mod menu
+		public bool ToggleButtonInsideMenu => true;
+		public List<IMenuMod.MenuEntry> GetMenuData(IMenuMod.MenuEntry? toggleButtonEntry)
+		{
+			return new List<IMenuMod.MenuEntry> { toggleButtonEntry.Value };
+		}
+
 		public void OnHeroUpdate()
 		{
 			MakeCanvas();
@@ -108,22 +115,6 @@ namespace Exaltation
 					KingsmouldCarapaceTimer = KINGSMOULD_REGEN_WAIT;
 				}
 			}
-			/*if (Input.GetKeyDown(KeyCode.H))
-			{
-				DebugNoGlorification = !DebugNoGlorification;
-				Log("No charm glorification set to " + DebugNoGlorification);
-			}
-			if (Input.GetKeyDown(KeyCode.J))
-			{
-				DebugAllGlories = !DebugAllGlories;
-				Log("All glorifications set to " + DebugAllGlories);
-			}
-			if (Input.GetKeyDown(KeyCode.K))
-			{
-				foreach (int i in CharmNums)
-					GlorifyCharm(i.ToString(), false);
-				Log("Removing all glorifications");
-			}*/
 			if (HeroController.instance.cState.nearBench && (WearingGlorifiedCharm("SoulCatcher") || WearingGlorifiedCharm("SoulEater")))
 				HeroController.instance.AddMPChargeSpa(1);
 			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.NMGPatience)
@@ -166,9 +157,9 @@ namespace Exaltation
 			}
 			if (IsGlorified("StalwartShell"))
 			{
-				if(key == "CHARM_NAME_4")
+				if (key == "CHARM_NAME_4")
 					return "Kingsmould Carapace";
-				else if(key == "CHARM_DESC_4")
+				else if (key == "CHARM_DESC_4")
 					return "White metal vessel used to shape and harness void material.\n\n" +
 						"The bearer will remain invulnerable for longer when recovering from damage. Additionally, their SOUL will be used, in increasing amounts, to lower the damage of overwhelming strikes against them.";
 			}
@@ -242,9 +233,9 @@ namespace Exaltation
 			}
 			if (IsGlorified("ShamanStone"))
 			{
-				if(key == "CHARM_NAME_19")
+				if (key == "CHARM_NAME_19")
 					return "Shaman Relic";
-				else if(key == "CHARM_DESC_19")
+				else if (key == "CHARM_DESC_19")
 					return "Carved relic from within the Ancestral Mound. Said to contain the minds of past generations of shamans.\n\n" +
 						"Greatly increases the power of spells, dealing much more damage to foes.";
 			}
@@ -300,11 +291,11 @@ namespace Exaltation
 					return "Golden nugget of hardened nectar from the Hive that has been compressed into a metal shell from the Crystal Peak.\n\n" +
 						"Quickly heals the bearer's recent wounds over time, allowing them to regain some health without focusing SOUL.";
 			}
-			if (IsGlorified("Dashmaster"))	
+			if (IsGlorified("Dashmaster"))
 			{
-				if(key == "CHARM_NAME_31")
+				if (key == "CHARM_NAME_31")
 					return "Marathon Master";
-				else if(key == "CHARM_DESC_31")
+				else if (key == "CHARM_DESC_31")
 					return "Bears the likeness of an eccentric bug known only as ‘The Dashmaster', in true form.\n\n" +
 						"The bearer will be able to dash more often as well as dash downwards.";
 			}
@@ -326,9 +317,9 @@ namespace Exaltation
 			}
 			if (IsGlorified("Sprintmaster"))
 			{
-				if(key == "CHARM_NAME_37")
+				if (key == "CHARM_NAME_37")
 					return "Stagway Coin";
-				else if(key == "CHARM_DESC_37")
+				else if (key == "CHARM_DESC_37")
 					return "A tarnished symbol once held by the upper caste of Hallownest. Each coin allowed priority access to the Stagways, should its holder prefer the old paths.\n\n" +
 						"Greatly increases the running speed of its bearer, allowing them to expedite their travels.";
 			}
@@ -412,7 +403,7 @@ namespace Exaltation
 			UpdateMoveSpeed();
 			AdjustOldValues();
 			WyrmfuryDeathProtection = true; //reset death protection when resting
-			if(WearingGlorifiedCharm("QuickSlash"))
+			if (WearingGlorifiedCharm("QuickSlash"))
 			{
 				hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
 				hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
@@ -437,7 +428,7 @@ namespace Exaltation
 					Fsm.GetFsmInt("Hatchling Max").
 					Value = WearingGlorifiedCharm("GlowingWomb") ? 8 : 4;
 				churm.LocateMyFSM("Hatchling Spawn").
-					Fsm.GetFsmFloat("Hatch Time").	
+					Fsm.GetFsmFloat("Hatch Time").
 					Value = WearingGlorifiedCharm("GlowingWomb") ? 2f : 4f;
 				churm.LocateMyFSM("Hatchling Spawn").
 					Fsm.GetFsmInt("Soul Cost").
@@ -455,7 +446,7 @@ namespace Exaltation
 			PlayerData pd = PlayerData.instance;
 			if (pd.maxHealth <= amount) //only protect from damage if we aren't at max health; mainly for radiant bosses
 				return amount;
-			else if(amount >= 2 && pd.MPCharge >= KingsmouldCarapaceSoulCost && WearingGlorifiedCharm("StalwartShell"))
+			else if (amount >= 2 && pd.MPCharge >= KingsmouldCarapaceSoulCost && WearingGlorifiedCharm("StalwartShell"))
 			{
 				amount--; // reduces high damage by 1 mask!
 				HeroController.instance.TakeMP(KingsmouldCarapaceSoulCost);
@@ -465,7 +456,7 @@ namespace Exaltation
 				if (KingsmouldCarapaceSoulCost > 100)
 					KingsmouldCarapaceSoulCost = 100;
 			}
-			if(pd.health <= amount && amount > 0 && WyrmfuryDeathProtection && WearingGlorifiedCharm("FuryOfTheFallen"))
+			if (pd.health <= amount && amount > 0 && WyrmfuryDeathProtection && WearingGlorifiedCharm("FuryOfTheFallen"))
 			{
 				amount = pd.health - 1; //brings to 1 HP if you're not there already
 				WyrmfuryDeathProtection = false; //nullify the hit!
@@ -599,18 +590,10 @@ namespace Exaltation
 		{
 			while (CharmIconList.Instance == null || GameManager.instance == null || HeroController.instance == null)
 				yield return null;
-			if(CachedSprites.Count == 0)
-			{
-				foreach ( int i in CharmNums ) //num num =^.^=
-				{
+			if (CachedSprites.Count == 0)
+				foreach (int i in CharmNums) //num num =^.^=
 					CachedSprites.Add(i.ToString(), CharmIconList.Instance.spriteList[i]);
-					Log("Cached vanilla sprite for charm number " + i);
-				}
-				Log("Charm sprite list length: " + CharmIconList.Instance.spriteList.Length);
-				/*for (int i = 0; i <= CharmIconList.Instance.spriteList.Length; i++)
-					Log("Charm " + i + " sprite: " + CharmIconList.Instance.spriteList[i].name);*/
-			}
-			foreach ( int i in CharmNums) //okay I want to die after writing that first comment
+			foreach (int i in CharmNums) //okay I want to die after writing that first comment
 				CharmIconList.Instance.spriteList[i] = IsGlorified(i.ToString()) ? Sprites["Exaltation.Resources.Charms." + i + ".png"] : CachedSprites[i.ToString()];
 			if (IsGlorified("FuryOfTheFallen") && Settings.FotFShade) //FotF has unique variants
 				CharmIconList.Instance.spriteList[6] = Sprites["Exaltation.Resources.Charms.6_shade.png"];
@@ -657,7 +640,7 @@ namespace Exaltation
 
 		private void UpdateWyrmfuryIcon()
 		{
-			if(WyrmfuryIcon == null)
+			if (WyrmfuryIcon == null)
 				return;
 			Image WyrmfuryPicture = WyrmfuryIcon.GetComponent<Image>();
 			if (!WearingGlorifiedCharm("FuryOfTheFallen") || GameManager.instance == null || GameManager.instance.gameState != GameState.PLAYING || InInventory())
@@ -665,7 +648,7 @@ namespace Exaltation
 				GameManager.instance.StartCoroutine(CanvasUtil.FadeOutCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				return;
 			}
-			if(CanvasObject.GetComponent<CanvasGroup>().gameObject.activeSelf == false)
+			if (CanvasObject.GetComponent<CanvasGroup>().gameObject.activeSelf == false)
 			{
 				GameManager.instance.StartCoroutine(CanvasUtil.FadeInCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				WyrmfuryPicture.fillAmount = 1f;
@@ -946,7 +929,7 @@ namespace Exaltation
 		{
 			CharmName = CharmName.ToLower();
 			bool glory = IsGlorified(CharmName);
-			switch(CharmName)
+			switch (CharmName)
 			{
 				case "gatheringswarm":
 					return glory && PlayerData.instance.equippedCharm_1;
@@ -1001,15 +984,11 @@ namespace Exaltation
 		public override void Initialize()
 		{
 			Instance = this;
-			Log("Exaltation initializing...");
 
 			try { RegisterCallbacks(); }
 			catch { Log("Exaltation failed to register callbacks!"); }
 			try { LoadAssets.LoadSounds(); }
 			catch { Log("Exaltation failed to find glorify sound!"); }
-			Log("Sounds loaded.");
-
-			Log("Exaltation initialized.");
 		}
 
 		private IEnumerator GloryEffects(string glorytext)
@@ -1069,12 +1048,34 @@ namespace Exaltation
 
 					//Create sprite from texture
 					Sprites.Add(res, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
-					Log("Created sprite from embedded image: " + res);
 				}
 			}
 
 			On.GeoControl.OnEnable += ProcessGeoUpdate;
+		}
+
+		public void Unload()
+		{
+			ModHooks.HeroUpdateHook -= OnHeroUpdate;
+			ModHooks.LanguageGetHook -= LanguageGet;
+
+			ModHooks.BeforeAddHealthHook -= TakeDamage;
+			ModHooks.TakeHealthHook -= TakeDamage;
+			ModHooks.BlueHealthHook -= LifebloodMasksRestored;
+
+			ModHooks.CharmUpdateHook -= OnCharmUpdate;
+
+			ModHooks.SoulGainHook -= GainSoul;
+
+			ModHooks.HitInstanceHook -= HitInstanceAdjust;
+
+			ModHooks.DashPressedHook -= DashPressed;
+
+			ModHooks.BeforeSavegameSaveHook -= BeforeSaveGameSave;
+			ModHooks.AfterSavegameLoadHook -= AfterSaveGameLoad;
+			ModHooks.SavegameSaveHook -= SaveGameSave;
+
+			On.GeoControl.OnEnable -= ProcessGeoUpdate;
 		}
 
 		private void AdjustOldValues()
@@ -1084,7 +1085,7 @@ namespace Exaltation
 			{
 				if (PlayerData.instance.focusMP_amount == 24) //1.0.2.1: Swift Focus focus cost decrease removed
 					PlayerData.instance.focusMP_amount = 33;
-                Settings.DreamWielderGlorified = false; //1.0.4.4: Dream Catcher removed
+				Settings.DreamWielderGlorified = false; //1.0.4.4: Dream Catcher removed
 			}
 		}
 	}
