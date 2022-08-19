@@ -69,6 +69,7 @@ namespace Exaltation
 		public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		internal Dictionary<string, Sprite> Sprites;
 		internal Dictionary<string, Sprite> CachedSprites;
+		internal Coroutine AlterSprites;
 		private static FieldInfo GeoControlSize = typeof(GeoControl).GetField("size", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static MethodInfo ClinkClink = typeof(GeoControl).GetMethod("PlayCollectSound", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static readonly FieldInfo SpriteField = typeof(HeroController).GetField("spriteFlash", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -90,8 +91,10 @@ namespace Exaltation
 		public void OnHeroUpdate()
 		{
 			MakeCanvas();
-			GameManager.instance.StartCoroutine(ChangeSprites());
-			float timer = Time.deltaTime;
+            if (AlterSprites != null)
+                GameManager.instance.StopCoroutine(AlterSprites);
+            AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
+            float timer = Time.deltaTime;
 			if (WearingGlorifiedCharm("FuryOfTheFallen"))
 				UpdateWyrmfuryIcon();
 			if (WearingGlorifiedCharm("BaldurShell") && PlayerData.instance.blockerHits < 4)
@@ -349,8 +352,10 @@ namespace Exaltation
 
 		private void AfterSaveGameLoad(SaveGameData data)
 		{
-			GameManager.instance.StartCoroutine(ChangeSprites());
-		}
+            if (AlterSprites != null)
+                GameManager.instance.StopCoroutine(AlterSprites);
+            AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
+        }
 
 		private void ProcessGeoUpdate(On.GeoControl.orig_OnEnable orig, GeoControl self)
 		{
@@ -600,6 +605,15 @@ namespace Exaltation
 			if (IsGlorified("NailmastersGlory") && Settings.NMGPatience) //and NMG is different entirely if made with the kingsoul
 				CharmIconList.Instance.spriteList[26] = Sprites["Exaltation.Resources.Charms.26_patience.png"];
 		}
+
+		private IEnumerator RevertSprites()
+		{
+            while (CharmIconList.Instance == null || GameManager.instance == null || HeroController.instance == null)
+                yield return null;
+            if (CachedSprites.Count != 0)
+                foreach (int i in CharmNums)
+					CharmIconList.Instance.spriteList[i] = CachedSprites[i.ToString()];
+        }
 
 		private void MakeCanvas()
 		{
@@ -1075,7 +1089,11 @@ namespace Exaltation
 			ModHooks.AfterSavegameLoadHook -= AfterSaveGameLoad;
 			ModHooks.SavegameSaveHook -= SaveGameSave;
 
-			On.GeoControl.OnEnable -= ProcessGeoUpdate;
+            if (AlterSprites != null)
+                GameManager.instance.StopCoroutine(AlterSprites);
+            AlterSprites = GameManager.instance.StartCoroutine(RevertSprites());
+
+            On.GeoControl.OnEnable -= ProcessGeoUpdate;
 		}
 
 		private void AdjustOldValues()
