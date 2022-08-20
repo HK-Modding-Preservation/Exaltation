@@ -30,8 +30,8 @@ namespace Exaltation
 		public bool SpellTwisterGlorified; //33
 		public bool SprintmasterGlorified; //37
 
-		public bool FotFShade;
-		public bool NMGPatience;
+        public bool LordSoul;
+        public bool NMGPatience;
 
 		public string LastVersion;
 	}

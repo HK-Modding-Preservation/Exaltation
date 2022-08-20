@@ -177,9 +177,9 @@ namespace Exaltation
 			if (IsGlorified("FuryOfTheFallen"))
 			{
 				if (key == "CHARM_NAME_6")
-					return (Settings.FotFShade ? "Shade" : "Wyrm") + "fury";
+					return (PlayerData.instance.gotShadeCharm && !Settings.LordSoul ? "Shade" : "Wyrm") + "fury";
 				else if (key == "CHARM_DESC_6")
-					return Settings.FotFShade ?
+					return PlayerData.instance.gotShadeCharm && !Settings.LordSoul ?
 						"Charm embodying the void's patience and resilience.\n\n" +
 						"When close to death, the energy contained within will fill the bearer with stillness and cold focus, and will absorb a single blow that would strike them down." :
 						"Charm born of Hallownest's refusal to bend to the old light.\n\n" +
@@ -331,23 +331,12 @@ namespace Exaltation
 
 		private void BeforeSaveGameSave(SaveGameData data = null)
 		{
-			PlayerData.instance.charmCost_2 = 1;
-			PlayerData.instance.charmCost_14 = 1;
-			PlayerData.instance.charmCost_29 = 4;
-			PlayerData.instance.charmCost_31 = 2;
-		}
+			ResetCharmCosts();
+        }
 
 		private void SaveGameSave(int id = 0)
 		{
-			if (IsGlorified("WaywardCompass"))
-				PlayerData.instance.charmCost_2 = 0;
-			if (IsGlorified("SteadyBody"))
-				PlayerData.instance.charmCost_14 = 0;
-			if (IsGlorified("Hiveblood"))
-				PlayerData.instance.charmCost_29 = 3;
-			if (IsGlorified("Dashmaster"))
-				PlayerData.instance.charmCost_31 = 1;
-			Settings.LastVersion = GetVersion();
+			ChangeCharmCosts();
 		}
 
 		private void AfterSaveGameLoad(SaveGameData data)
@@ -357,7 +346,38 @@ namespace Exaltation
             AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
         }
 
-		private void ProcessGeoUpdate(On.GeoControl.orig_OnEnable orig, GeoControl self)
+		private void ChangeCharmCosts()
+        {
+            if (IsGlorified("WaywardCompass"))
+                PlayerData.instance.charmCost_2 = 0;
+            if (IsGlorified("SteadyBody"))
+                PlayerData.instance.charmCost_14 = 0;
+            if (IsGlorified("Hiveblood"))
+                PlayerData.instance.charmCost_29 = 3;
+            if (IsGlorified("Dashmaster"))
+                PlayerData.instance.charmCost_31 = 1;
+            if (PlayerData.instance.gotShadeCharm)
+            {
+                PlayerData.instance.SetIntInternal("royalCharmState", Settings.LordSoul ? 3 : 4);
+                PlayerData.instance.charmCost_36 = Settings.LordSoul ? 3 : 0;
+            }
+            Settings.LastVersion = GetVersion();
+        }
+
+        private void ResetCharmCosts()
+        {
+            PlayerData.instance.charmCost_2 = 1;
+            PlayerData.instance.charmCost_14 = 1;
+            PlayerData.instance.charmCost_29 = 4;
+            PlayerData.instance.charmCost_31 = 2;
+            if (PlayerData.instance.gotShadeCharm)
+            {
+                PlayerData.instance.SetIntInternal("royalCharmState", 4);
+                PlayerData.instance.charmCost_36 = 0;
+            }
+        }
+
+        private void ProcessGeoUpdate(On.GeoControl.orig_OnEnable orig, GeoControl self)
 		{
 			orig(self);
 			if (WearingGlorifiedCharm("GatheringSwarm")) //with symbol of avarice, instantly transfer geo rather than drop it
@@ -389,20 +409,6 @@ namespace Exaltation
 					}
 					if (glorified_this_update)
 						HeroController.instance.StartCoroutine(GloryEffects("Charms glorified through recent victories"));
-				}
-				if (PlayerData.instance.statueStateSly.completedTier1 && WearingGlorifiedCharm("NailmastersGlory"))
-				{
-					PlayerData.instance.statueStateSly.completedTier1 = false;
-					if (!Settings.NMGPatience)
-					{
-						Settings.NMGPatience = true;
-						hc.StartCoroutine(GloryEffects("Nailsage's Tenacy ensorcelled with the power of the Kingsoul"));
-					}
-					else
-					{
-						Settings.NMGPatience = false;
-						hc.StartCoroutine(GloryEffects("Sagesoul imbued with the tenacity of a nailsage"));
-					}
 				}
 			}
 			UpdateMoveSpeed();
@@ -444,6 +450,32 @@ namespace Exaltation
 			pd.charmCost_14 = IsGlorified("SteadyBody") ? 0 : 1;
 			pd.charmCost_29 = IsGlorified("Hiveblood") ? 3 : 4;
 			pd.charmCost_31 = IsGlorified("Dashmaster") ? 1 : 2;
+			
+            if (PlayerData.instance.gotShadeCharm)
+            {
+                PlayerData.instance.SetIntInternal("royalCharmState", Settings.LordSoul ? 3 : 4);
+                PlayerData.instance.charmCost_36 = Settings.LordSoul ? 3 : 0;
+            }
+        }
+
+		public void OnDreamReturn(On.BossSceneController.orig_DoDreamReturn orig, BossSceneController self) //DreamTransmutation//
+		{
+            if (GameManager.instance.sceneName == "GG_Sly")
+            {
+                Settings.NMGPatience = !Settings.NMGPatience;
+            }
+			if (GameManager.instance.sceneName == "GG_Grimm_Nightmare")
+			{
+				if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 4)
+                    PlayerData.instance.SetIntInternal("grimmChildLevel", 5);
+				else if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 5)
+                    PlayerData.instance.SetIntInternal("grimmChildLevel", 4);
+			}
+			if (GameManager.instance.sceneName == "GG_Hollow_Knight" && PlayerData.instance.gotShadeCharm)
+			{
+				Settings.LordSoul = !Settings.LordSoul;
+			}
+			orig(self);
 		}
 
 		private int TakeDamage(int amount)
@@ -600,7 +632,7 @@ namespace Exaltation
 					CachedSprites.Add(i.ToString(), CharmIconList.Instance.spriteList[i]);
 			foreach (int i in CharmNums) //okay I want to die after writing that first comment
 				CharmIconList.Instance.spriteList[i] = IsGlorified(i.ToString()) ? Sprites["Exaltation.Resources.Charms." + i + ".png"] : CachedSprites[i.ToString()];
-			if (IsGlorified("FuryOfTheFallen") && Settings.FotFShade) //FotF has unique variants
+			if (IsGlorified("FuryOfTheFallen") && PlayerData.instance.gotShadeCharm && !Settings.LordSoul) //FotF has unique variants
 				CharmIconList.Instance.spriteList[6] = Sprites["Exaltation.Resources.Charms.6_shade.png"];
 			if (IsGlorified("NailmastersGlory") && Settings.NMGPatience) //and NMG is different entirely if made with the kingsoul
 				CharmIconList.Instance.spriteList[26] = Sprites["Exaltation.Resources.Charms.26_patience.png"];
@@ -667,7 +699,7 @@ namespace Exaltation
 				GameManager.instance.StartCoroutine(CanvasUtil.FadeInCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				WyrmfuryPicture.fillAmount = 1f;
 			}
-			string Wyrm = !Settings.FotFShade ? "Wyrm" : "Shade";
+			string Wyrm = PlayerData.instance.gotShadeCharm && !Settings.LordSoul ? "Shade" : "Wyrm";
 			string Broken = WyrmfuryDeathProtection ? "Icon" : "Broken";
 			WyrmfuryPicture.sprite = Sprites["Exaltation.Resources." + Wyrm + "fury" + Broken + ".png"];
 		}
@@ -865,8 +897,6 @@ namespace Exaltation
 				case "furyofthefallen":
 				case "6":
 					Settings.FuryOfTheFallenGlorified = GloryAdjust;
-					if (GloryAdjust && PlayerData.instance.gotShadeCharm)
-						Settings.FotFShade = true;
 					break;
 				case "quickfocus":
 				case "7":
@@ -1007,8 +1037,6 @@ namespace Exaltation
 
 		private IEnumerator GloryEffects(string glorytext)
 		{
-			if (Random.Range(1, 101) == 100)
-				glorytext = "Charms glorified by the gods of discord";
 			yield return new WaitForSeconds(0.35f);
 			TextObject.text = glorytext;
 			TextObject.CrossFadeAlpha(1f, 0f, false);
@@ -1030,8 +1058,9 @@ namespace Exaltation
 			ModHooks.BlueHealthHook += LifebloodMasksRestored;
 
 			ModHooks.CharmUpdateHook += OnCharmUpdate;
+            On.BossSceneController.DoDreamReturn += OnDreamReturn;
 
-			ModHooks.SoulGainHook += GainSoul;
+            ModHooks.SoulGainHook += GainSoul;
 
 			ModHooks.HitInstanceHook += HitInstanceAdjust;
 
@@ -1041,7 +1070,9 @@ namespace Exaltation
 			ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
 			ModHooks.SavegameSaveHook += SaveGameSave;
 
-			Assembly asm = Assembly.GetExecutingAssembly();
+			ChangeCharmCosts();
+
+            Assembly asm = Assembly.GetExecutingAssembly();
 			Sprites = new Dictionary<string, Sprite>();
 			CachedSprites = new Dictionary<string, Sprite>();
 			foreach (string res in asm.GetManifestResourceNames())
@@ -1078,8 +1109,9 @@ namespace Exaltation
 			ModHooks.BlueHealthHook -= LifebloodMasksRestored;
 
 			ModHooks.CharmUpdateHook -= OnCharmUpdate;
+            On.BossSceneController.DoDreamReturn += OnDreamReturn;
 
-			ModHooks.SoulGainHook -= GainSoul;
+            ModHooks.SoulGainHook -= GainSoul;
 
 			ModHooks.HitInstanceHook -= HitInstanceAdjust;
 
@@ -1088,6 +1120,8 @@ namespace Exaltation
 			ModHooks.BeforeSavegameSaveHook -= BeforeSaveGameSave;
 			ModHooks.AfterSavegameLoadHook -= AfterSaveGameLoad;
 			ModHooks.SavegameSaveHook -= SaveGameSave;
+
+			ResetCharmCosts();
 
             if (AlterSprites != null)
                 GameManager.instance.StopCoroutine(AlterSprites);
