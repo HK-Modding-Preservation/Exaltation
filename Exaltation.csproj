@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FsmUtility.cs" />
     <Compile Include="LoadAssets.cs" />
     <Compile Include="WavUtility.cs" />
     <Compile Include="Exaltation.cs" />
@@ -163,9 +164,6 @@
     <EmbeddedResource Include="Resources\Charms\2.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Charms\Voidtuner.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\Glorify.wav" />
   </ItemGroup>
   <ItemGroup>
@@ -188,13 +186,10 @@
     <EmbeddedResource Include="Resources\Charms\26_patience.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Charms\AbyssalTuner.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resources\Charms\22.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Charms\30.png" />
+    <EmbeddedResource Include="Resources\Charms\36.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\DreamCatcherProc.wav" />

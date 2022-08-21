@@ -24,15 +24,12 @@ namespace Exaltation
 		public bool NailmastersGloryGlorified; //26... and a little redundant
 		public bool JonisBlessingGlorified; //27
 		public bool HivebloodGlorified; //29
-		public bool DreamWielderGlorified; //30
 		public bool DashmasterGlorified; //31
 		public bool QuickSlashGlorified; //32
 		public bool SpellTwisterGlorified; //33
 		public bool SprintmasterGlorified; //37
 
-        public bool LordSoul;
-        public bool NMGPatience;
-
-		public string LastVersion;
+        public bool Lordsoul;
+        public bool Patience;
 	}
 }

@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using GlobalEnums;
 using Modding;
 using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using UnityEngine.UI;
-using GlobalEnums;
+using UnityEngine.SceneManagement;
 
 namespace Exaltation
 {
@@ -67,15 +69,15 @@ namespace Exaltation
 
 		internal static Exaltation Instance;
 		public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
-		internal Dictionary<string, Sprite> Sprites;
-		internal Dictionary<string, Sprite> CachedSprites;
+		internal Dictionary<string, Sprite> Sprites, CachedSprites;
 		internal Coroutine AlterSprites;
 		private static FieldInfo GeoControlSize = typeof(GeoControl).GetField("size", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static MethodInfo ClinkClink = typeof(GeoControl).GetMethod("PlayCollectSound", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static readonly FieldInfo SpriteField = typeof(HeroController).GetField("spriteFlash", BindingFlags.Instance | BindingFlags.NonPublic);
 		private static FieldInfo ShadowDashCD = typeof(HeroController).GetField("shadowDashTimer", BindingFlags.NonPublic | BindingFlags.Instance);
 
-		private int[] CharmNums = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 16, 19, 20, 21, 22, 26, 27, 29, 30, 31, 32, 33, 35, 37 }; //the charm numbers that can be glorified go here for sprites and the like
+		private int[] CharmNums = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 16, 19, 20, 21, 22, 26, 27, 29, 31, 32, 33, 35, 37 }; //the charm numbers that can be glorified go here for sprites and the like
+		private bool SwitchGlory, SwitchSoul, SwitchNightmare;
 
 		public SaveSettings Settings = new SaveSettings();
 		public void OnLoadLocal(SaveSettings s) => Settings = s;
@@ -91,9 +93,6 @@ namespace Exaltation
 		public void OnHeroUpdate()
 		{
 			MakeCanvas();
-            if (AlterSprites != null)
-                GameManager.instance.StopCoroutine(AlterSprites);
-            AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
             float timer = Time.deltaTime;
 			if (WearingGlorifiedCharm("FuryOfTheFallen"))
 				UpdateWyrmfuryIcon();
@@ -120,7 +119,7 @@ namespace Exaltation
 			}
 			if (HeroController.instance.cState.nearBench && (WearingGlorifiedCharm("SoulCatcher") || WearingGlorifiedCharm("SoulEater")))
 				HeroController.instance.AddMPChargeSpa(1);
-			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.NMGPatience)
+			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.Patience)
 			{
 				NailsageRegenTime -= Time.deltaTime;
 				if (NailsageRegenTime <= 0)
@@ -177,9 +176,9 @@ namespace Exaltation
 			if (IsGlorified("FuryOfTheFallen"))
 			{
 				if (key == "CHARM_NAME_6")
-					return (PlayerData.instance.gotShadeCharm && !Settings.LordSoul ? "Shade" : "Wyrm") + "fury";
+					return (PlayerData.instance.gotShadeCharm && !Settings.Lordsoul ? "Shade" : "Wyrm") + "fury";
 				else if (key == "CHARM_DESC_6")
-					return PlayerData.instance.gotShadeCharm && !Settings.LordSoul ?
+					return PlayerData.instance.gotShadeCharm && !Settings.Lordsoul ?
 						"Charm embodying the void's patience and resilience.\n\n" +
 						"When close to death, the energy contained within will fill the bearer with stillness and cold focus, and will absorb a single blow that would strike them down." :
 						"Charm born of Hallownest's refusal to bend to the old light.\n\n" +
@@ -269,9 +268,9 @@ namespace Exaltation
 			if (IsGlorified("NailmastersGlory"))
 			{
 				if (key == "CHARM_NAME_26")
-					return Settings.NMGPatience ? "Sagesoul" : "Nailsage's Tenacity";
+					return Settings.Patience ? "Sagesoul" : "Nailsage's Tenacity";
 				else if (key == "CHARM_DESC_26")
-					return Settings.NMGPatience ?
+					return Settings.Patience ?
 						"Charm ensorcelled with a fraction of the Kingsoul's power. Defeat a nailsage in the Hall of Gods to reverse the enchantment.\n\n" +
 						"Improves the bearer's mastery of Nail Arts and slowly draws SOUL from the surrounding world.\n\n" +
 						"The bearer's nail attacks will gain no SOUL, but will slice easily through armor." :
@@ -326,45 +325,52 @@ namespace Exaltation
 					return "A tarnished symbol once held by the upper caste of Hallownest. Each coin allowed priority access to the Stagways, should its holder prefer the old paths.\n\n" +
 						"Greatly increases the running speed of its bearer, allowing them to expedite their travels.";
 			}
-			return Language.Language.GetInternal(key, sheet);
+            if (Settings.Lordsoul)
+            {
+                if (key == "CHARM_NAME_36_B")
+                    return "Lordsoul";
+                else if (key == "CHARM_DESC_36_B")
+                    return "Soul of the Pale Wyrm who gave birth to this land's monarch.\n\n" +
+                        "The bearer will slowly absorb the limitless SOUL contained within.";
+            }
+            return Language.Language.GetInternal(key, sheet);
 		}
 
 		private void BeforeSaveGameSave(SaveGameData data = null)
 		{
-			ResetCharmCosts();
+			RestoreCharms();
         }
 
 		private void SaveGameSave(int id = 0)
 		{
-			ChangeCharmCosts();
+			ChangeCharms();
 		}
 
-		private void AfterSaveGameLoad(SaveGameData data)
-		{
+        private void SceneLoaded(Scene arg0, LoadSceneMode lsm)
+        {
             if (AlterSprites != null)
                 GameManager.instance.StopCoroutine(AlterSprites);
             AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
         }
 
-		private void ChangeCharmCosts()
+        private void ChangeCharms()
         {
-            if (IsGlorified("WaywardCompass"))
-                PlayerData.instance.charmCost_2 = 0;
-            if (IsGlorified("SteadyBody"))
-                PlayerData.instance.charmCost_14 = 0;
-            if (IsGlorified("Hiveblood"))
-                PlayerData.instance.charmCost_29 = 3;
-            if (IsGlorified("Dashmaster"))
-                PlayerData.instance.charmCost_31 = 1;
+			Glorification();
+            PlayerData.instance.charmCost_2 = IsGlorified("WaywardCompass") ? 0 : 1;
+            PlayerData.instance.charmCost_14 = IsGlorified("SteadyBody") ? 0 : 1;
+            PlayerData.instance.charmCost_29 = IsGlorified("Hiveblood") ? 3 : 4;
+            PlayerData.instance.charmCost_31 = IsGlorified("Dashmaster") ? 1 : 2;
             if (PlayerData.instance.gotShadeCharm)
             {
-                PlayerData.instance.SetIntInternal("royalCharmState", Settings.LordSoul ? 3 : 4);
-                PlayerData.instance.charmCost_36 = Settings.LordSoul ? 3 : 0;
+                PlayerData.instance.SetIntInternal("royalCharmState", Settings.Lordsoul ? 3 : 4);
+                PlayerData.instance.charmCost_36 = Settings.Lordsoul ? 3 : 0;
             }
-            Settings.LastVersion = GetVersion();
+            if (AlterSprites != null)
+                GameManager.instance.StopCoroutine(AlterSprites);
+            AlterSprites = GameManager.instance.StartCoroutine(ChangeSprites());
         }
 
-        private void ResetCharmCosts()
+        private void RestoreCharms()
         {
             PlayerData.instance.charmCost_2 = 1;
             PlayerData.instance.charmCost_14 = 1;
@@ -375,6 +381,9 @@ namespace Exaltation
                 PlayerData.instance.SetIntInternal("royalCharmState", 4);
                 PlayerData.instance.charmCost_36 = 0;
             }
+            if (AlterSprites != null)
+                GameManager.instance.StopCoroutine(AlterSprites);
+            AlterSprites = GameManager.instance.StartCoroutine(RestoreSprites());
         }
 
         private void ProcessGeoUpdate(On.GeoControl.orig_OnEnable orig, GeoControl self)
@@ -387,32 +396,60 @@ namespace Exaltation
 				ClinkClink.Invoke(self, null);
 				self.Disable(0.05f);
 			}
-		}
+        }
 
-		private void OnCharmUpdate(PlayerData pd, HeroController hc)
+        private void Glorification()
+        {
+            if (TextObject == null)
+                MakeCanvas();
+            if (HeroController.instance != null)
+            {
+                bool glorified_this_update = false;
+                foreach (int i in CharmNums)
+                {
+                    string s = i.ToString();
+                    if (CanGlorify(s) && !IsGlorified(s))
+                    {
+                        GlorifyCharm(s);
+                        glorified_this_update = true;
+                    }
+                }
+                if (glorified_this_update)
+                    HeroController.instance.StartCoroutine(GloryEffects("Charms glorified through recent victories"));
+                if (SwitchGlory)
+                {
+                    SwitchGlory = false;
+                    Settings.Patience = !Settings.Patience;
+                    if (Settings.Patience)
+                        HeroController.instance.StartCoroutine(GloryEffects("Nailsage's Tenacy ensorcelled with the power of the Kingsoul"));
+                    else
+                        HeroController.instance.StartCoroutine(GloryEffects("Sagesoul imbued with the tenacity of a nailsage"));
+                }
+                if (SwitchNightmare)
+                {
+                    SwitchNightmare = false;
+                    if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 4)
+                        PlayerData.instance.SetIntInternal("grimmChildLevel", 5);
+                    else if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 5)
+                        PlayerData.instance.SetIntInternal("grimmChildLevel", 4);
+                    HeroController.instance.StartCoroutine(GloryEffects("The expanse of dream in past was split"));
+                }
+                if (SwitchSoul)
+                {
+                    SwitchSoul = false;
+                    Settings.Lordsoul = !Settings.Lordsoul;
+                    if (Settings.Lordsoul)
+                        HeroController.instance.StartCoroutine(GloryEffects("Void Heart satiated with the soul of a Lord"));
+                    else
+                        HeroController.instance.StartCoroutine(GloryEffects("Lordsoul consumed by the heart of nothingness"));
+                }
+            }
+        }
+
+        private void OnCharmUpdate(PlayerData pd, HeroController hc)
 		{
-			if (TextObject == null)
-				MakeCanvas();
-			else
-			{
-				if (hc != null)
-				{
-					bool glorified_this_update = false;
-					foreach (int i in CharmNums)
-					{
-						string s = i.ToString();
-						if (CanGlorify(s) && !IsGlorified(s))
-						{
-							GlorifyCharm(s);
-							glorified_this_update = true;
-						}
-					}
-					if (glorified_this_update)
-						HeroController.instance.StartCoroutine(GloryEffects("Charms glorified through recent victories"));
-				}
-			}
+			ChangeCharms();
 			UpdateMoveSpeed();
-			AdjustOldValues();
 			WyrmfuryDeathProtection = true; //reset death protection when resting
 			if (WearingGlorifiedCharm("QuickSlash"))
 			{
@@ -446,35 +483,16 @@ namespace Exaltation
 					Value = WearingGlorifiedCharm("GlowingWomb") ? 4 : 8;
 			}
 			hc.spellControl.Fsm.GetFsmFloat("Time Per MP Drain CH").Value = WearingGlorifiedCharm("QuickFocus") ? SWIFT_FOCUS_SPEED_CH : BASE_FOCUS_SPEED_CH;
-			pd.charmCost_2 = IsGlorified("WaywardCompass") ? 0 : 1;
-			pd.charmCost_14 = IsGlorified("SteadyBody") ? 0 : 1;
-			pd.charmCost_29 = IsGlorified("Hiveblood") ? 3 : 4;
-			pd.charmCost_31 = IsGlorified("Dashmaster") ? 1 : 2;
-			
-            if (PlayerData.instance.gotShadeCharm)
-            {
-                PlayerData.instance.SetIntInternal("royalCharmState", Settings.LordSoul ? 3 : 4);
-                PlayerData.instance.charmCost_36 = Settings.LordSoul ? 3 : 0;
-            }
         }
 
 		public void OnDreamReturn(On.BossSceneController.orig_DoDreamReturn orig, BossSceneController self) //DreamTransmutation//
 		{
             if (GameManager.instance.sceneName == "GG_Sly")
-            {
-                Settings.NMGPatience = !Settings.NMGPatience;
-            }
+				SwitchGlory = true;
 			if (GameManager.instance.sceneName == "GG_Grimm_Nightmare")
-			{
-				if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 4)
-                    PlayerData.instance.SetIntInternal("grimmChildLevel", 5);
-				else if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 5)
-                    PlayerData.instance.SetIntInternal("grimmChildLevel", 4);
-			}
+				SwitchNightmare = true;
 			if (GameManager.instance.sceneName == "GG_Hollow_Knight" && PlayerData.instance.gotShadeCharm)
-			{
-				Settings.LordSoul = !Settings.LordSoul;
-			}
+				SwitchSoul = true;
 			orig(self);
 		}
 
@@ -547,7 +565,7 @@ namespace Exaltation
 				amount += 2; //Vanilla soul catcher is +3, so +2 = +5%
 			if (WearingGlorifiedCharm("SoulEater"))
 				amount += 3; //Vanilla soul eater is +8, so +3 = +11% - double the base!
-			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.NMGPatience && amount >= NAILSAGE_SOUL_REGEN + 1)
+			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.Patience && amount >= NAILSAGE_SOUL_REGEN + 1)
 				amount = NAILSAGE_SOUL_REGEN + 1; //allow synergization but don't make it overpowered
 			return amount;
 		}
@@ -583,7 +601,7 @@ namespace Exaltation
 					hit.DamageDealt = (int)(hit.DamageDealt * 1.15f);
 				if (WearingGlorifiedCharm("NailmastersGlory"))
 				{
-					if (Settings.NMGPatience) //change this AFTER modifying spell damage to avoid massive damage stacking
+					if (Settings.Patience) //change this AFTER modifying spell damage to avoid massive damage stacking
 						hit.AttackType = AttackTypes.Spell;
 					else
 						hit.DamageDealt += (int)(hit.DamageDealt * 0.03f * (PlayerData.instance.maxHealth - PlayerData.instance.health));
@@ -632,19 +650,37 @@ namespace Exaltation
 					CachedSprites.Add(i.ToString(), CharmIconList.Instance.spriteList[i]);
 			foreach (int i in CharmNums) //okay I want to die after writing that first comment
 				CharmIconList.Instance.spriteList[i] = IsGlorified(i.ToString()) ? Sprites["Exaltation.Resources.Charms." + i + ".png"] : CachedSprites[i.ToString()];
-			if (IsGlorified("FuryOfTheFallen") && PlayerData.instance.gotShadeCharm && !Settings.LordSoul) //FotF has unique variants
+			if (IsGlorified("FuryOfTheFallen") && PlayerData.instance.gotShadeCharm && !Settings.Lordsoul) //FotF has unique variants
 				CharmIconList.Instance.spriteList[6] = Sprites["Exaltation.Resources.Charms.6_shade.png"];
-			if (IsGlorified("NailmastersGlory") && Settings.NMGPatience) //and NMG is different entirely if made with the kingsoul
+			if (IsGlorified("NailmastersGlory") && Settings.Patience) //and NMG is different entirely if made with the kingsoul
 				CharmIconList.Instance.spriteList[26] = Sprites["Exaltation.Resources.Charms.26_patience.png"];
-		}
 
-		private IEnumerator RevertSprites()
+            PlayMakerFSM Charm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Collected Charms/36").LocateMyFSM("charm_show_if_collected");
+            PlayMakerFSM DetailedCharm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Details/Detail Sprite").LocateMyFSM("Update Sprite");
+            GameObject EquippedCharm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Equipped Charms").GetComponent<BuildEquippedCharms>().gameObjectList[35];
+            if (!CachedSprites.ContainsKey("36"))
+                CachedSprites["36"] = EquippedCharm.GetComponent<CharmDisplay>().whiteCharm;
+            Charm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+            DetailedCharm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+            EquippedCharm.GetComponent<CharmDisplay>().whiteCharm = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+        }
+
+		private IEnumerator RestoreSprites()
 		{
             while (CharmIconList.Instance == null || GameManager.instance == null || HeroController.instance == null)
                 yield return null;
             if (CachedSprites.Count != 0)
                 foreach (int i in CharmNums)
-					CharmIconList.Instance.spriteList[i] = CachedSprites[i.ToString()];
+                    CharmIconList.Instance.spriteList[i] = CachedSprites[i.ToString()];
+			if (CachedSprites.ContainsKey("36"))
+			{
+                PlayMakerFSM Charm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Collected Charms/36").LocateMyFSM("charm_show_if_collected");
+                PlayMakerFSM DetailedCharm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Details/Detail Sprite").LocateMyFSM("Update Sprite");
+                GameObject EquippedCharm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Equipped Charms").GetComponent<BuildEquippedCharms>().gameObjectList[35];
+                Charm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = CachedSprites["36"];
+                DetailedCharm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = CachedSprites["36"];
+                EquippedCharm.GetComponent<CharmDisplay>().whiteCharm = CachedSprites["36"];
+            }
         }
 
 		private void MakeCanvas()
@@ -699,7 +735,7 @@ namespace Exaltation
 				GameManager.instance.StartCoroutine(CanvasUtil.FadeInCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				WyrmfuryPicture.fillAmount = 1f;
 			}
-			string Wyrm = PlayerData.instance.gotShadeCharm && !Settings.LordSoul ? "Shade" : "Wyrm";
+			string Wyrm = PlayerData.instance.gotShadeCharm && !Settings.Lordsoul ? "Shade" : "Wyrm";
 			string Broken = WyrmfuryDeathProtection ? "Icon" : "Broken";
 			WyrmfuryPicture.sprite = Sprites["Exaltation.Resources." + Wyrm + "fury" + Broken + ".png"];
 		}
@@ -1066,11 +1102,12 @@ namespace Exaltation
 
 			ModHooks.DashPressedHook += DashPressed;
 
-			ModHooks.BeforeSavegameSaveHook += BeforeSaveGameSave;
-			ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
+            On.GeoControl.OnEnable += ProcessGeoUpdate;
+
+            ModHooks.BeforeSavegameSaveHook += BeforeSaveGameSave;
 			ModHooks.SavegameSaveHook += SaveGameSave;
 
-			ChangeCharmCosts();
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += SceneLoaded;
 
             Assembly asm = Assembly.GetExecutingAssembly();
 			Sprites = new Dictionary<string, Sprite>();
@@ -1096,8 +1133,8 @@ namespace Exaltation
 				}
 			}
 
-			On.GeoControl.OnEnable += ProcessGeoUpdate;
-		}
+            ChangeCharms();
+        }
 
 		public void Unload()
 		{
@@ -1117,28 +1154,14 @@ namespace Exaltation
 
 			ModHooks.DashPressedHook -= DashPressed;
 
-			ModHooks.BeforeSavegameSaveHook -= BeforeSaveGameSave;
-			ModHooks.AfterSavegameLoadHook -= AfterSaveGameLoad;
+            On.GeoControl.OnEnable -= ProcessGeoUpdate;
+
+            ModHooks.BeforeSavegameSaveHook -= BeforeSaveGameSave;
 			ModHooks.SavegameSaveHook -= SaveGameSave;
 
-			ResetCharmCosts();
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= SceneLoaded;
 
-            if (AlterSprites != null)
-                GameManager.instance.StopCoroutine(AlterSprites);
-            AlterSprites = GameManager.instance.StartCoroutine(RevertSprites());
-
-            On.GeoControl.OnEnable -= ProcessGeoUpdate;
-		}
-
-		private void AdjustOldValues()
-		{
-			string version = GetVersion();
-			if (version != Settings.LastVersion) //assume this to be an old version and adjust values accordingly
-			{
-				if (PlayerData.instance.focusMP_amount == 24) //1.0.2.1: Swift Focus focus cost decrease removed
-					PlayerData.instance.focusMP_amount = 33;
-				Settings.DreamWielderGlorified = false; //1.0.4.4: Dream Catcher removed
-			}
+			RestoreCharms();
 		}
 	}
 }
