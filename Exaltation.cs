@@ -39,24 +39,16 @@ namespace Exaltation
 		private const float BASE_HIVEBLOOD_SPEED = 5f; //10 seconds
 		private const float AMPOULE_HIVEBLOOD_SPEED = 4f; //8 seconds
 
-		private const int BASE_HATCHLING_COST = 8;
-
 		private float StoneshellRegenTime = 0f;
 		private const float STONESHELL_REGEN_WAIT = 10f;
 
 		private const int MONOMON_LENS_SOUL_PER_DAMAGE = 4;
 		private const float MONOMON_LENS_MAX_INCREASE = 25;
 
-		private float NailsageRegenTime = 0f;
-		private const float NAILSAGE_SOUL_WAIT = 0.75f;
-		private const int NAILSAGE_SOUL_REGEN = 4;
-
 		private const int KINGSMOULD_CARAPACE_BASE_SOUL = 33;
 		private const float KINGSMOULD_REGEN_WAIT = 0.33f;
 		private int KingsmouldCarapaceSoulCost = KINGSMOULD_CARAPACE_BASE_SOUL;
 		private float KingsmouldCarapaceTimer = 0f;
-
-		private const int DREAM_CATCHER_COST = 10;
 
 		private bool WyrmfuryDeathProtection = true;
 		private GameObject CanvasObject;
@@ -119,15 +111,6 @@ namespace Exaltation
 			}
 			if (HeroController.instance.cState.nearBench && (WearingGlorifiedCharm("SoulCatcher") || WearingGlorifiedCharm("SoulEater")))
 				HeroController.instance.AddMPChargeSpa(1);
-			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.Patience)
-			{
-				NailsageRegenTime -= Time.deltaTime;
-				if (NailsageRegenTime <= 0)
-				{
-					NailsageRegenTime = NAILSAGE_SOUL_WAIT;
-					HeroController.instance.AddMPCharge(GainSoul(NAILSAGE_SOUL_REGEN));
-				}
-			}
 		}
 
 		public string LanguageGet(string key, string sheet, string orig)
@@ -268,13 +251,12 @@ namespace Exaltation
 			if (IsGlorified("NailmastersGlory"))
 			{
 				if (key == "CHARM_NAME_26")
-					return Settings.Patience ? "Sagesoul" : "Nailsage's Tenacity";
+					return Settings.Patience ? "Nailsage's Patience" : "Nailsage's Tenacity";
 				else if (key == "CHARM_DESC_26")
 					return Settings.Patience ?
-						"Charm ensorcelled with a fraction of the Kingsoul's power. Defeat a nailsage in the Hall of Gods to reverse the enchantment.\n\n" +
-						"Improves the bearer's mastery of Nail Arts and slowly draws SOUL from the surrounding world.\n\n" +
-						"The bearer's nail attacks will gain no SOUL, but will slice easily through armor." :
-						"Contains the timeless ferocity and vigor of a Nailsage. Defeat a nailsage in the Hall of Gods to enchant it.\n\n" +
+                        "Contains the timeless persistence and resolve of a Nailsage.\n\n" +
+                        "Improves the bearer's mastery of Nail Arts and empowers their nail to slice through armor at the cost of its attacks yielding no SOUL." :
+						"Contains the timeless ferocity and vigor of a Nailsage.\n\n" +
 						"Improves the bearer's mastery of Nail Arts and increases the power of their nail strikes as they near death.";
 			}
 			if (IsGlorified("JonisBlessing"))
@@ -421,17 +403,25 @@ namespace Exaltation
                     SwitchGlory = false;
                     Settings.Patience = !Settings.Patience;
                     if (Settings.Patience)
-                        HeroController.instance.StartCoroutine(GloryEffects("Nailsage's Tenacy ensorcelled with the power of the Kingsoul"));
+                        HeroController.instance.StartCoroutine(GloryEffects("Nailmaster's Glory imbued with the patience of a nailsage"));
                     else
-                        HeroController.instance.StartCoroutine(GloryEffects("Sagesoul imbued with the tenacity of a nailsage"));
+                        HeroController.instance.StartCoroutine(GloryEffects("Nailmaster's Glory imbued with the tenacity of a nailsage"));
                 }
                 if (SwitchNightmare)
                 {
                     SwitchNightmare = false;
                     if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 4)
+                    {
                         PlayerData.instance.SetIntInternal("grimmChildLevel", 5);
+                        PlayerData.instance.destroyedNightmareLantern = true;
+                        PlayerData.instance.charmCost_40 = 3;
+                    }
                     else if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 5)
+                    {
                         PlayerData.instance.SetIntInternal("grimmChildLevel", 4);
+                        PlayerData.instance.destroyedNightmareLantern = false;
+                        PlayerData.instance.charmCost_40 = 2;
+                    }
                     HeroController.instance.StartCoroutine(GloryEffects("The expanse of dream in past was split"));
                 }
                 if (SwitchSoul)
@@ -487,7 +477,7 @@ namespace Exaltation
 
 		public void OnDreamReturn(On.BossSceneController.orig_DoDreamReturn orig, BossSceneController self) //DreamTransmutation//
 		{
-            if (GameManager.instance.sceneName == "GG_Sly")
+            if (GameManager.instance.sceneName == "GG_Sly" && IsGlorified("NailmastersGlory"))
 				SwitchGlory = true;
 			if (GameManager.instance.sceneName == "GG_Grimm_Nightmare")
 				SwitchNightmare = true;
@@ -565,8 +555,6 @@ namespace Exaltation
 				amount += 2; //Vanilla soul catcher is +3, so +2 = +5%
 			if (WearingGlorifiedCharm("SoulEater"))
 				amount += 3; //Vanilla soul eater is +8, so +3 = +11% - double the base!
-			if (WearingGlorifiedCharm("NailmastersGlory") && Settings.Patience && amount >= NAILSAGE_SOUL_REGEN + 1)
-				amount = NAILSAGE_SOUL_REGEN + 1; //allow synergization but don't make it overpowered
 			return amount;
 		}
 
