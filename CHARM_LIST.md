@@ -159,7 +159,7 @@ Costs three notches instead of four, and regenerates health 20% faster.
 
 Glorified by defeating the Pure Vessel.
 
-## Dashmaster -> Marathon Master
+## Dashmaster -> Stagway Coin
 
 ![DM](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/31.png?raw=true)
 
@@ -183,11 +183,11 @@ Increases spell damage depending on remaining SOUL after cast. Every 4 SOUL incr
 
 Glorified by completing the Pantheon of the Artist with SOUL bound or defeating ascended Uumuu.
 
-## Sprintmaster -> Stagway Coin
+## Sprintmaster -> Marathon Master
 
 ![Coin](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/37.png?raw=true)
 
-Increases movement speed by 40%, instead of 20%. Combine with Marathon Master for shenanigans.
+Increases movement speed by 40%, instead of 20%. Combine with Stagway Coin for shenanigans.
 
 Glorified by defeating Paintmaster Sheo.
 

@@ -278,10 +278,10 @@ namespace Exaltation
 			if (IsGlorified("Dashmaster"))
 			{
 				if (key == "CHARM_NAME_31")
-					return "Marathon Master";
+					return "Stagway Coin";
 				else if (key == "CHARM_DESC_31")
-					return "Bears the likeness of an eccentric bug known only as ‘The Dashmaster', in true form.\n\n" +
-						"The bearer will be able to dash more often as well as dash downwards.";
+					return "A tarnished symbol once held by the upper caste of Hallownest. Each coin allowed priority access to the Stagways, should its holder prefer the old paths.\n\n" +
+                        "The bearer will be able to dash more often as well as dash downwards. Perfect for those who want to expedite their travels.";
 			}
 			if (IsGlorified("QuickSlash"))
 			{
@@ -302,10 +302,10 @@ namespace Exaltation
 			if (IsGlorified("Sprintmaster"))
 			{
 				if (key == "CHARM_NAME_37")
-					return "Stagway Coin";
+					return "Marathon Master";
 				else if (key == "CHARM_DESC_37")
-					return "A tarnished symbol once held by the upper caste of Hallownest. Each coin allowed priority access to the Stagways, should its holder prefer the old paths.\n\n" +
-						"Greatly increases the running speed of its bearer, allowing them to expedite their travels.";
+                    return "Bears the likeness of a strange bug known only as 'The Sprintmaster', in true form.\n\n" +
+                        "Greatly increases the running speed of its bearer, allowing them to outrace many a bug.";
 			}
             if (Settings.Lordsoul)
             {
