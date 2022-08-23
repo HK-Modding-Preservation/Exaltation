@@ -59,7 +59,7 @@ Glorified by defeating Brothers Oro and Mato.
 
 Greatly increases the speed of focusing SOUL.
 
-Glorified by completing the Pantheon of the Knight with SOUL bound, or defeating the radiant Pure Vessel.
+Glorified by completing the Pantheon of the Knight with SOUL bound, or defeating the ascended Pure Vessel.
 
 ## Lifeblood Heart -> Lifeblood Crux
 
@@ -173,7 +173,7 @@ Glorified by defeating Paintmaster Sheo.
 
 Decreases nail damage by 25%. Uncaps nail swing speed.
 
-Glorified by completing the Pantheon of the Knight with NAIL bound or defeating radiant Brothers Oro and Mato.
+Glorified by completing the Pantheon of the Knight with CHARMS bound or defeating radiant Brothers Oro and Mato.
 
 ## Spell Twister -> Prismatic Lens
 
@@ -197,7 +197,7 @@ Glorified by defeating Paintmaster Sheo.
 
 Same effect as Kingsoul for three notch instead of five.
 
-Glorified by defeating the Pure Vessel. Defeat him again to swap between the two.
+Glorified by defeating the radiant Pure Vessel. Defeat Pure Vessel to swap between the two.
 
 ## Grimmchild <-> Carefree Melody
 

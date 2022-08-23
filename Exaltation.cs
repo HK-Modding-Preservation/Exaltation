@@ -476,7 +476,7 @@ namespace Exaltation
 				SwitchGlory = true;
 			if (GameManager.instance.sceneName == "GG_Grimm_Nightmare")
 				SwitchNightmare = true;
-			if (GameManager.instance.sceneName == "GG_Hollow_Knight" && PlayerData.instance.gotShadeCharm)
+			if (GameManager.instance.sceneName == "GG_Hollow_Knight" && PlayerData.instance.statueStateHollowKnight.completedTier3 && PlayerData.instance.gotShadeCharm)
 				SwitchSoul = true;
 			orig(self);
         }
@@ -834,7 +834,7 @@ namespace Exaltation
 					return pd.killedNailBros;
 				case "quickfocus":
 				case "7":
-					return pd.bossDoorStateTier4.boundSoul || pd.statueStateHollowKnight.completedTier3;
+					return pd.bossDoorStateTier4.boundSoul || pd.statueStateHollowKnight.completedTier2;
 				case "lifebloodheart":
 				case "8":
 					return pd.killedPaintmaster;
@@ -876,7 +876,7 @@ namespace Exaltation
 					return pd.killedPaintmaster;
 				case "quickslash":
 				case "32":
-					return pd.bossDoorStateTier4.boundNail || pd.statueStateNailmasters.completedTier3;
+					return pd.bossDoorStateTier4.boundCharms || pd.statueStateNailmasters.completedTier3;
 				case "spelltwister":
 				case "33":
 					return pd.bossDoorStateTier2.boundSoul || pd.statueStateUumuu.completedTier2;
