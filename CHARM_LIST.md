@@ -8,7 +8,7 @@ This file contains a list of all charm glorifications, their sprites, and their 
 
 Rather than picking up Geo after a few moments, any Geo will be picked up instantly as soon as it spawns.
 
-Glorified by beating Brothers Oro and Mato.
+Glorified by defeating Great Nailsage Sly.
 
 ## Wayward Compass -> Lifeseed Lantern
 
@@ -16,7 +16,7 @@ Glorified by beating Brothers Oro and Mato.
 
 Costs zero notches, and adds one lifeblood mask.
 
-Glorified by beating Brothers Oro and Mato.
+Glorified by defeating Brothers Oro and Mato.
 
 ## Grubsong -> Glubberfly Hymn
 
@@ -42,16 +42,16 @@ Glorified by completing the Pantheon of the Master with SHELL bound, or defeatin
 
 The shell regains one hit every 10 seconds that no damage is taken.
 
-Glorified by beating Brothers Oro and Mato.
+Glorified by defeating Brothers Oro and Mato.
 
-## Fury of the Fallen -> Wyrmfury/Shadefury
+## Fury of the Fallen -> Wyrmfury / Shadefury
 
 ![FotF1](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/6.png?raw=true) ![FotF2](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/6_shade.png?raw=true)
 
-Has a different appearance depending on if you have the Void Heart or not at the time of unlocking.
+Has a different appearance depending on if you have the Void Heart or not.
 Nullifies a single hit that would kill you, and increases nail damage while at one mask by an additional 15%.
 
-Glorified by beating Brothers Oro and Mato.
+Glorified by defeating Brothers Oro and Mato.
 
 ## Quick Focus -> Swift Focus
 
@@ -133,19 +133,15 @@ Spawns hatchlings 50% faster, and has 8 maximum hatchlings, up from 4. Costs 4 S
 
 Glorified by defeating Paintmaster Sheo.
 
-## Nailmaster's Glory -> Sagesoul/Nailsage's Tenacity
+## Nailmaster's Glory -> Nailsage's Tenacity / Nailsage's Patience
 
-![NMGP](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/26_patience.png?raw=true) ![NMG](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/26.png?raw=true)
-
-Obtain Sagesoul by glorifying before obtaining the Void Heart, and Nailsage's Tenacity by glorifying after.
-
-Sagesoul causes nail hits to gain no SOUL and deal spell damage instead of nail damage, and the bearer gains 4 SOUL every 0.75 seconds.
+![NMG](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/26.png?raw=true) ![NMGP](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/26_patience.png?raw=true)
 
 Nailsage's Tenacity increases nail damage by 3% per mask of missing health.
 
-Defeat Sly in the Hall of Gods on Attuned difficulty to swap between the two.
+Nailsage's Patience causes nail hits to bypass armor but gain no SOUL.
 
-Glorified by defeating Great Nailsage Sly.
+Glorified by defeating Great Nailsage Sly. Defeat him again to swap between the two.
 
 ## Joni's Blessing -> Joni's Benediction
 
@@ -194,3 +190,15 @@ Glorified by completing the Pantheon of the Artist with SOUL bound or defeating 
 Increases movement speed by 40%, instead of 20%. Combine with Marathon Master for shenanigans.
 
 Glorified by defeating Paintmaster Sheo.
+
+## Void Heart <-> Lordsoul
+
+![Lordsoul](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/36.png?raw=true)
+
+Same effect as Kingsoul for three notch instead of five.
+
+Glorified by defeating the Pure Vessel. Defeat him again to swap between the two.
+
+## Grimmchild <-> Carefree Melody
+
+Defeat Nightmare King Grimm in the Hall of Gods to swap between the two.
