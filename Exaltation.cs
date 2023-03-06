@@ -377,14 +377,15 @@ namespace Exaltation
                         PlayerData.instance.SetIntInternal("grimmChildLevel", 5);
                         PlayerData.instance.destroyedNightmareLantern = true;
                         PlayerData.instance.charmCost_40 = 3;
+						Text = "Nightmare Slain";
                     }
                     else if (PlayerData.instance.GetIntInternal("grimmChildLevel") == 5)
                     {
                         PlayerData.instance.SetIntInternal("grimmChildLevel", 4);
                         PlayerData.instance.destroyedNightmareLantern = false;
                         PlayerData.instance.charmCost_40 = 2;
+						Text = "Nightmare Kindled";
                     }
-                    Text = "The expanse of dream in past was split";
                 }
                 if (SwitchSoul)
                 {
