@@ -91,6 +91,9 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Delete Files="$(OutputPath)System.Core.dll" Condition="Exists('$(OutputPath)System.Core.dll')" />
+  </Target>
   <ItemGroup>
     <Compile Include="FsmUtility.cs" />
     <Compile Include="LoadAssets.cs" />
