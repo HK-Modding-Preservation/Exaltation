@@ -18,7 +18,7 @@ namespace Exaltation
 #warning DEBUG MODE ACTIVE - DO NOT SHIP THIS
 #warning ####################################
 #endif
-	public class Exaltation : Mod, IMenuMod, ITogglableMod, ILocalSettings<SaveSettings>
+	public class Exaltation : Mod, ILocalSettings<SaveSettings>
 	{
 
 		private const float BASE_SPEED = 8.3f;
@@ -56,13 +56,14 @@ namespace Exaltation
 		private Text TextObject;
 		private GameObject WyrmfuryIcon;
 
+		private Coroutine FadeWyrmfury;
+
 		private bool DebugNoGlorification = false; //Set this to true to disable all glorifications
 		private bool DebugAllGlories = false; //Set this to true to make all charms eligible for glorification
 
 		internal static Exaltation Instance;
 		public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 		internal Dictionary<string, Sprite> Sprites, CachedSprites;
-		internal Coroutine AlterSprites;
 		private static FieldInfo GeoControlSize = typeof(GeoControl).GetField("size", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static MethodInfo ClinkClink = typeof(GeoControl).GetMethod("PlayCollectSound", BindingFlags.NonPublic | BindingFlags.Instance);
 		private static readonly FieldInfo SpriteField = typeof(HeroController).GetField("spriteFlash", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -74,13 +75,6 @@ namespace Exaltation
 		public SaveSettings Settings = new SaveSettings();
 		public void OnLoadLocal(SaveSettings s) => Settings = s;
 		public SaveSettings OnSaveLocal() => Settings;
-
-		// Mod menu
-		public bool ToggleButtonInsideMenu => true;
-		public List<IMenuMod.MenuEntry> GetMenuData(IMenuMod.MenuEntry? toggleButtonEntry)
-		{
-			return new List<IMenuMod.MenuEntry> { toggleButtonEntry.Value };
-		}
 
 		public void OnHeroUpdate()
 		{
@@ -320,40 +314,43 @@ namespace Exaltation
 
 		private void BeforeSaveGameSave(SaveGameData data = null)
 		{
-			ChangeCharmData(false);
+            // Reset charm costs and Void Heart before save
+            PlayerData.instance.charmCost_2 = 1;
+            PlayerData.instance.charmCost_14 = 1;
+            PlayerData.instance.charmCost_29 = 4;
+            PlayerData.instance.charmCost_31 = 2;
+            if (PlayerData.instance.gotShadeCharm)
+            {
+                PlayerData.instance.SetIntInternal("royalCharmState", 4);
+                PlayerData.instance.charmCost_36 = 0;
+            }
         }
 
 		private void SaveGameSave(int id = 0)
 		{
-			Glorification();
-			ChangeSprites();
-			ChangeCharmData();
+			// Glorify on save and change sprites, costs and effects
+            Glorification();
+            ChangeCharmCosts();
 			ChangeCharmEffects();
+            GameManager.instance.StartCoroutine(ChangeSprites());
         }
 
         private void SceneLoaded(Scene arg0, LoadSceneMode lsm)
         {
-			ChangeSprites();
+            GameManager.instance.StartCoroutine(ChangeSprites()); // Sprites are reset on scene load
         }
 
         private void OnCharmUpdate(PlayerData pd, HeroController hc)
         {
-            ChangeCharmData();
-            ChangeCharmEffects();
-            WyrmfuryDeathProtection = true; //reset death protection when resting
+            ChangeCharmEffects(); // Change charm effects if charms changed
         }
 
-        private void ChangeCharmData(bool exaltation = true)
+        private void ChangeCharmCosts()
         {
-            PlayerData.instance.charmCost_2 = IsGlorified("WaywardCompass") && exaltation ? 0 : 1;
-            PlayerData.instance.charmCost_14 = IsGlorified("SteadyBody") && exaltation ? 0 : 1;
-            PlayerData.instance.charmCost_29 = IsGlorified("Hiveblood") && exaltation ? 3 : 4;
-            PlayerData.instance.charmCost_31 = IsGlorified("Dashmaster") && exaltation ? 1 : 2;
-            if (PlayerData.instance.gotShadeCharm)
-            {
-                PlayerData.instance.SetIntInternal("royalCharmState", Settings.Lordsoul && exaltation ? 3 : 4);
-                PlayerData.instance.charmCost_36 = Settings.Lordsoul && exaltation ? 3 : 0;
-            }
+			if (IsGlorified("WaywardCompass")) PlayerData.instance.charmCost_2 = 0;
+			if (IsGlorified("SteadyBody")) PlayerData.instance.charmCost_14 = 0;
+			if (IsGlorified("Hiveblood")) PlayerData.instance.charmCost_29 = 3;
+			if (IsGlorified("Dashmaster")) PlayerData.instance.charmCost_31 = 1;
         }
 
         private void Glorification()
@@ -407,13 +404,13 @@ namespace Exaltation
             }
         }
 
-		private void ChangeCharmEffects(bool exaltation = true)
+		private void ChangeCharmEffects()
 		{
 			HeroController hc = HeroController.instance;
             // Steel Tempest
 			if (hc != null)
             {
-                if (WearingGlorifiedCharm("QuickSlash") && exaltation)
+                if (WearingGlorifiedCharm("QuickSlash"))
                 {
                     hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
                     hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
@@ -430,7 +427,7 @@ namespace Exaltation
             {
                 helf.LocateMyFSM("Hive Health Regen").
                     Fsm.GetFsmFloat("Recover Time").
-                    Value = WearingGlorifiedCharm("Hiveblood") && exaltation ? AMPOULE_HIVEBLOOD_SPEED : BASE_HIVEBLOOD_SPEED;
+                    Value = WearingGlorifiedCharm("Hiveblood") ? AMPOULE_HIVEBLOOD_SPEED : BASE_HIVEBLOOD_SPEED;
             }
             // Primal Womb
             GameObject churm = GameObject.Find("Charm Effects");
@@ -438,23 +435,23 @@ namespace Exaltation
             {
                 churm.LocateMyFSM("Hatchling Spawn").
                     Fsm.GetFsmInt("Hatchling Max").
-                    Value = WearingGlorifiedCharm("GlowingWomb") && exaltation ? 8 : 4;
+                    Value = WearingGlorifiedCharm("GlowingWomb") ? 8 : 4;
                 churm.LocateMyFSM("Hatchling Spawn").
                     Fsm.GetFsmFloat("Hatch Time").
-                    Value = WearingGlorifiedCharm("GlowingWomb") && exaltation ? 2f : 4f;
+                    Value = WearingGlorifiedCharm("GlowingWomb") ? 2f : 4f;
                 churm.LocateMyFSM("Hatchling Spawn").
                     Fsm.GetFsmInt("Soul Cost").
-                    Value = WearingGlorifiedCharm("GlowingWomb") && exaltation ? 4 : 8;
+                    Value = WearingGlorifiedCharm("GlowingWomb") ? 4 : 8;
             }
             // Swift Focus
             if (hc != null)
                 hc.spellControl.
                     Fsm.GetFsmFloat("Time Per MP Drain CH")
-                    .Value = WearingGlorifiedCharm("QuickFocus") && exaltation ? SWIFT_FOCUS_SPEED_CH : BASE_FOCUS_SPEED_CH;
+                    .Value = WearingGlorifiedCharm("QuickFocus") ? SWIFT_FOCUS_SPEED_CH : BASE_FOCUS_SPEED_CH;
             // Stagway Coin
             if (hc != null)
 			{
-                if (WearingGlorifiedCharm("Sprintmaster") && exaltation)
+                if (WearingGlorifiedCharm("Sprintmaster"))
                 {
                     hc.RUN_SPEED_CH = BASE_SPEED_CH_GLORY;
                     hc.RUN_SPEED_CH_COMBO = BASE_SPEED_CH_GLORY_COMBO;
@@ -468,7 +465,14 @@ namespace Exaltation
                     hc.RUN_SPEED_CH_COMBO = BASE_SPEED_CH_COMBO;
                 }
             }
-            
+            // Lordsoul
+            if (PlayerData.instance.gotShadeCharm)
+            {
+                PlayerData.instance.SetIntInternal("royalCharmState", Settings.Lordsoul ? 3 : 4);
+                PlayerData.instance.charmCost_36 = Settings.Lordsoul ? 3 : 0;
+            }
+            // Reset death protection for Wyrmfury
+            WyrmfuryDeathProtection = true;
         }
 
 		private void OnDreamReturn(On.BossSceneController.orig_DoDreamReturn orig, BossSceneController self) //DreamTransmutation//
@@ -620,14 +624,7 @@ namespace Exaltation
 			return fsmBool != null && fsmBool.Value;
 		}
 
-		private void ChangeSprites(bool exaltation = true)
-		{
-            if (AlterSprites != null)
-                GameManager.instance.StopCoroutine(AlterSprites);
-            AlterSprites = GameManager.instance.StartCoroutine(ModifySprites(exaltation));
-        }
-
-		private IEnumerator ModifySprites(bool exaltation = true)
+		private IEnumerator ChangeSprites()
 		{
 			while (CharmIconList.Instance == null || GameManager.instance == null || HeroController.instance == null)
 				yield return null;
@@ -637,10 +634,10 @@ namespace Exaltation
 					CachedSprites.Add(i.ToString(), CharmIconList.Instance.spriteList[i]);
 
 			foreach (int i in CharmNums) //okay I want to die after writing that first comment
-				CharmIconList.Instance.spriteList[i] = IsGlorified(i.ToString()) && exaltation ? Sprites["Exaltation.Resources.Charms." + i + ".png"] : CachedSprites[i.ToString()];
-			if (IsGlorified("FuryOfTheFallen") && PlayerData.instance.gotShadeCharm && !Settings.Lordsoul && exaltation) //FotF has unique variants
+				CharmIconList.Instance.spriteList[i] = IsGlorified(i.ToString()) ? Sprites["Exaltation.Resources.Charms." + i + ".png"] : CachedSprites[i.ToString()];
+			if (IsGlorified("FuryOfTheFallen") && PlayerData.instance.gotShadeCharm && !Settings.Lordsoul) //FotF has unique variants
 				CharmIconList.Instance.spriteList[6] = Sprites["Exaltation.Resources.Charms.6_shade.png"];
-			if (IsGlorified("NailmastersGlory") && Settings.Patience && exaltation) //and NMG is different entirely if made with the kingsoul
+			if (IsGlorified("NailmastersGlory") && Settings.Patience) //and NMG is different entirely if made with the kingsoul
 				CharmIconList.Instance.spriteList[26] = Sprites["Exaltation.Resources.Charms.26_patience.png"];
 
             PlayMakerFSM Charm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Collected Charms/36").LocateMyFSM("charm_show_if_collected");
@@ -648,9 +645,9 @@ namespace Exaltation
             GameObject EquippedCharm = GameObject.Find("/_GameCameras/HudCamera/Inventory/Charms/Equipped Charms").GetComponent<BuildEquippedCharms>().gameObjectList[35];
             if (!CachedSprites.ContainsKey("36"))
                 CachedSprites["36"] = EquippedCharm.GetComponent<CharmDisplay>().whiteCharm;
-            Charm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul && exaltation ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
-            DetailedCharm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul && exaltation ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
-            EquippedCharm.GetComponent<CharmDisplay>().whiteCharm = Settings.Lordsoul && exaltation ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+            Charm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+            DetailedCharm.GetAction<SetSpriteRendererSprite>("R Final", 0).sprite.Value = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
+            EquippedCharm.GetComponent<CharmDisplay>().whiteCharm = Settings.Lordsoul ? Sprites["Exaltation.Resources.Charms.36.png"] : CachedSprites["36"];
         }
 
 		private void MakeCanvas()
@@ -710,12 +707,14 @@ namespace Exaltation
 			Image WyrmfuryPicture = WyrmfuryIcon.GetComponent<Image>();
 			if (!WearingGlorifiedCharm("FuryOfTheFallen") || GameManager.instance == null || GameManager.instance.gameState != GameState.PLAYING || InInventory())
 			{
-				GameManager.instance.StartCoroutine(CanvasUtil.FadeOutCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
+				if (FadeWyrmfury != null) GameManager.instance.StopCoroutine(FadeWyrmfury);
+                FadeWyrmfury = GameManager.instance.StartCoroutine(CanvasUtil.FadeOutCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				return;
 			}
 			if (CanvasObject.GetComponent<CanvasGroup>().gameObject.activeSelf == false)
 			{
-				GameManager.instance.StartCoroutine(CanvasUtil.FadeInCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
+                if (FadeWyrmfury != null) GameManager.instance.StopCoroutine(FadeWyrmfury);
+                FadeWyrmfury = GameManager.instance.StartCoroutine(CanvasUtil.FadeInCanvasGroup(CanvasObject.GetComponent<CanvasGroup>()));
 				WyrmfuryPicture.fillAmount = 1f;
 			}
 			string Wyrm = PlayerData.instance.gotShadeCharm && !Settings.Lordsoul ? "Shade" : "Wyrm";
@@ -1180,41 +1179,6 @@ namespace Exaltation
 					Sprites.Add(res, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 				}
 			}
-
-            Glorification();
-			ChangeSprites();
-            ChangeCharmData();
-            ChangeCharmEffects();
-        }
-
-		public void Unload()
-		{
-			ModHooks.HeroUpdateHook -= OnHeroUpdate;
-			ModHooks.LanguageGetHook -= LanguageGet;
-
-			ModHooks.BeforeAddHealthHook -= TakeDamage;
-			ModHooks.TakeHealthHook -= TakeDamage;
-			ModHooks.BlueHealthHook -= LifebloodMasksRestored;
-
-			ModHooks.CharmUpdateHook -= OnCharmUpdate;
-            On.BossSceneController.DoDreamReturn += OnDreamReturn;
-
-            ModHooks.SoulGainHook -= GainSoul;
-
-			ModHooks.HitInstanceHook -= HitInstanceAdjust;
-
-			ModHooks.DashPressedHook -= DashPressed;
-
-            On.GeoControl.OnEnable -= ProcessGeoUpdate;
-
-            ModHooks.BeforeSavegameSaveHook -= BeforeSaveGameSave;
-			ModHooks.SavegameSaveHook -= SaveGameSave;
-
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= SceneLoaded;
-
-            ChangeSprites(false);
-            ChangeCharmData(false);
-            ChangeCharmEffects(false);
         }
 	}
 }
