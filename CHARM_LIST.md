@@ -195,7 +195,7 @@ Glorified by defeating Paintmaster Sheo.
 
 ![Lordsoul](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/36.png?raw=true)
 
-Same effect as Kingsoul for three notch instead of five.
+Same effect as Kingsoul for three notches instead of five.
 
 Glorified by defeating the radiant Pure Vessel. Defeat Pure Vessel to swap between the two.
 
