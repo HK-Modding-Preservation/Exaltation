@@ -2,7 +2,7 @@
 
 This mod for Hollow Knight implements the scrapped mechanic of "charm glorification" in the Godmaster content pack. In short, it allows you to empower your charms by progressing through the various boss rush rooms (Pantheons) in the Godhome area.
 
-Created by Xhuis with a lot of help from modders in the Hollow Knight Discord, including 56, 753, Avenging Angle, and others. You guys rock.
+Created by Xhuis with a lot of help from modders in the Hollow Knight Discord, including 56, 753, Avenging Angle, and others. You guys rock. Ported and updated by Théodore.
 
 ## Features
 
@@ -14,19 +14,23 @@ Created by Xhuis with a lot of help from modders in the Hollow Knight Discord, i
 
 ![](https://i.imgur.com/SFrBFlq.png)
 
-A full list of glorifications can be found [here](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHARM_LIST.md). Note that this file contains **spoilers!**
+A full list of glorifications can be found [here](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/CHARM_LIST.md). Note that this file contains **spoilers!**
 
 ## Installation
 
-Only for Hollow Knight 1.5
+*Mod only compatible with Hollow Knight 1.5*
 
-+ Install the [modding API](https://github.com/hk-modding/api) (if you're already using Scarab or Lumafly, you can skip this step)
-+ Download the latest release and drag-and-drop the Exaltation folder containing Exaltation.dll into Hollow Knight/Hollow Knight_Data/Managed/Mods
+**Now available on Lumafly and Scarab!**
+
+Manual installation:
++ First, install the [modding API](https://github.com/hk-modding/api)
++ Then, download the [latest release](https://github.com/TheodoreChristianRadu/Exaltation/releases/latest) of the mod
++ Finally, extract `Exaltation.zip` into a `Exaltation` folder containing `Exaltation.dll` and `Exaltation.pdb` and move it to `Hollow Knight/Hollow Knight_Data/Managed/Mods` to install the mod
 
 ## Other Info
 
-[Full charm glorification list. Contains spoilers.](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHARM_LIST.md)
+[Full charm glorification list. Contains spoilers.](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/CHARM_LIST.md)
 
-[Changelog. No spoilers.](https://github.com/TheodoreBranlex/Exaltation/blob/master/CHANGELOG.md)
+[Changelog. No spoilers.](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/CHANGELOG.md)
 
-Exaltation is licensed under the [MIT License](https://github.com/TheodoreBranlex/Exaltation/blob/master/LICENSE.md). If any representatives from Team Cherry feel that this license conflicts with Hollow Knight as a product, get in touch with me so that I can change it properly.
+Exaltation is licensed under the [MIT License](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/LICENSE.md). If any representatives from Team Cherry feel that this license conflicts with Hollow Knight as a product, get in touch with me so that I can change it properly.
