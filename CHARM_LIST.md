@@ -197,7 +197,7 @@ Glorified by defeating Paintmaster Sheo.
 
 Same effect as Kingsoul for three notches instead of five.
 
-Glorified by defeating the radiant Pure Vessel. Defeat Pure Vessel to swap between the two.
+Glorified by defeating radiant Pure Vessel. Defeat Pure Vessel to swap between the two.
 
 ## Grimmchild <-> Carefree Melody
 
