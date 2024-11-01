@@ -343,6 +343,7 @@ namespace Exaltation
 
         private void SceneLoaded(Scene arg0, LoadSceneMode lsm)
         {
+            ChangeCharmCosts(); // Change charm costs after loading
             GameManager.instance.StartCoroutine(ChangeSprites()); // Sprites are reset on scene load
         }
 
