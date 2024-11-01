@@ -332,7 +332,12 @@ namespace Exaltation
             }
         }
 
-		private void SaveGameSave(int id = 0)
+        private void AfterSaveGameLoad(SaveGameData data)
+        {
+            ChangeCharmCosts(); // Change charm costs after loading
+        }
+
+        private void SaveGameSave(int id = 0)
 		{
 			// Glorify on save and change sprites, costs and effects
             Glorification();
@@ -343,7 +348,6 @@ namespace Exaltation
 
         private void SceneLoaded(Scene arg0, LoadSceneMode lsm)
         {
-            ChangeCharmCosts(); // Change charm costs after loading
             GameManager.instance.StartCoroutine(ChangeSprites()); // Sprites are reset on scene load
         }
 
@@ -1159,7 +1163,8 @@ namespace Exaltation
             On.GeoControl.OnEnable += ProcessGeoUpdate;
 
             ModHooks.BeforeSavegameSaveHook += BeforeSaveGameSave;
-			ModHooks.SavegameSaveHook += SaveGameSave;
+            ModHooks.AfterSavegameLoadHook += AfterSaveGameLoad;
+            ModHooks.SavegameSaveHook += SaveGameSave;
 
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += SceneLoaded;
 
