@@ -86,11 +86,6 @@ namespace Exaltation
                 hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
                 hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
             }
-            else
-            {
-                hc.ATTACK_COOLDOWN_TIME_CH = BASE_ATTACK_COOLDOWN_CH;
-                hc.ATTACK_DURATION_CH = BASE_ATTACK_DURATION_CH;
-            }
             if (WearingGlorifiedCharm("FuryOfTheFallen"))
 				UpdateWyrmfuryIcon();
 			if (WearingGlorifiedCharm("BaldurShell") && PlayerData.instance.blockerHits < 4)
@@ -418,6 +413,20 @@ namespace Exaltation
 		private void ChangeCharmEffects()
 		{
 			HeroController hc = HeroController.instance;
+            // Steel Tempest
+            if (hc != null)
+            {
+                if (WearingGlorifiedCharm("QuickSlash"))
+                {
+                    hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
+                    hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
+                }
+                else
+                {
+                    hc.ATTACK_COOLDOWN_TIME_CH = BASE_ATTACK_COOLDOWN_CH;
+                    hc.ATTACK_DURATION_CH = BASE_ATTACK_DURATION_CH;
+                }
+            }
             // Ambrosial Ampoule
             GameObject helf = GameObject.Find("Health");
             if (helf != null)
