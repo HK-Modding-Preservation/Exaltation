@@ -78,9 +78,20 @@ namespace Exaltation
 
 		public void OnHeroUpdate()
 		{
-			MakeCanvas();
+            MakeCanvas();
             float timer = Time.deltaTime;
-			if (WearingGlorifiedCharm("FuryOfTheFallen"))
+            HeroController hc = HeroController.instance;
+            if (WearingGlorifiedCharm("QuickSlash"))
+            {
+                hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
+                hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
+            }
+            else
+            {
+                hc.ATTACK_COOLDOWN_TIME_CH = BASE_ATTACK_COOLDOWN_CH;
+                hc.ATTACK_DURATION_CH = BASE_ATTACK_DURATION_CH;
+            }
+            if (WearingGlorifiedCharm("FuryOfTheFallen"))
 				UpdateWyrmfuryIcon();
 			if (WearingGlorifiedCharm("BaldurShell") && PlayerData.instance.blockerHits < 4)
 			{
@@ -103,8 +114,8 @@ namespace Exaltation
 					KingsmouldCarapaceTimer = KINGSMOULD_REGEN_WAIT;
 				}
 			}
-			if (HeroController.instance.cState.nearBench && (WearingGlorifiedCharm("SoulCatcher") || WearingGlorifiedCharm("SoulEater")))
-				HeroController.instance.AddMPChargeSpa(1);
+			if (hc.cState.nearBench && (WearingGlorifiedCharm("SoulCatcher") || WearingGlorifiedCharm("SoulEater")))
+				hc.AddMPChargeSpa(1);
 		}
 
 		public string LanguageGet(string key, string sheet, string orig)
@@ -407,20 +418,6 @@ namespace Exaltation
 		private void ChangeCharmEffects()
 		{
 			HeroController hc = HeroController.instance;
-            // Steel Tempest
-			if (hc != null)
-            {
-                if (WearingGlorifiedCharm("QuickSlash"))
-                {
-                    hc.ATTACK_COOLDOWN_TIME_CH = STEEL_TEMPEST_ATTACK_COOLDOWN; //nyoooommmm
-                    hc.ATTACK_DURATION_CH = STEEL_TEMPEST_ATTACK_DURATION;
-                }
-                else
-                {
-                    hc.ATTACK_COOLDOWN_TIME_CH = BASE_ATTACK_COOLDOWN_CH;
-                    hc.ATTACK_DURATION_CH = BASE_ATTACK_DURATION_CH;
-                }
-            }
             // Ambrosial Ampoule
             GameObject helf = GameObject.Find("Health");
             if (helf != null)
