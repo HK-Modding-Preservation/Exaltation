@@ -309,7 +309,7 @@ namespace Exaltation
                     return "Soul of the Pale Wyrm who gave birth to this land's monarch.\n\n" +
                         "The bearer will slowly absorb the limitless SOUL contained within.";
             }
-            return Language.Language.GetInternal(key, sheet);
+            return orig;
 		}
 
 		private void BeforeSaveGameSave(SaveGameData data = null)
