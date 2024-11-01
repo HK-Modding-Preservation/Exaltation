@@ -169,15 +169,15 @@ Glorified by defeating Paintmaster Sheo.
 
 ## Quick Slash -> Steel Tempest
 
-![yes it's literally a white palace sawblade](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/32.png?raw=true)
+![Buzzsaw](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/32.png?raw=true)
 
-Decreases nail damage by 25%. Uncaps nail swing speed.
+Uncaps nail swing speed.
 
 Glorified by completing the Pantheon of the Knight with CHARMS bound or defeating radiant Brothers Oro and Mato.
 
 ## Spell Twister -> Prismatic Lens
 
-![:monopride:](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/33.png?raw=true)
+![Lens](https://github.com/TheodoreChristianRadu/Exaltation/blob/master/Resources/Charms/33.png?raw=true)
 
 Increases spell damage depending on remaining SOUL after cast. Every 4 SOUL increases damage by 1%, to a max of +25%.
 

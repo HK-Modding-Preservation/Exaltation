@@ -289,7 +289,7 @@ namespace Exaltation
 					return "Steel Tempest";
 				else if (key == "CHARM_DESC_32")
 					return "Bladed disc forged from pale ore. Emits a whistling sound when moving through the air.\n\n" +
-						"The bearer's nail will become like a storm of metal, moderately decreasing its damage but tremendously increasing its swinging speed.";
+						"The bearer's nail will become like a storm of metal, tremendously increasing its swinging speed.";
 			}
 			if (IsGlorified("SpellTwister"))
 			{
